@@ -1,0 +1,10 @@
+{
+  "name": "deepseek-proxy-function",
+  "version": "1.0.0",
+  "description": "火山引擎云函数 - DeepSeek API 代理",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
+
