@@ -477,12 +477,39 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, onReset, mode }
     const commonColor = '#FFFFFF'; 
     switch(mode) {
       case AppMode.PROJECTION:
-        return { color: commonColor, icon: 'fas fa-eye', title: '情绪投射分析' };
+        return { 
+          color: commonColor, 
+          icon: <i className="fas fa-eye" style={{ color: 'white' }}></i>,
+          title: '情绪投射分析' 
+        };
       case AppMode.ACTIVE_IMAGINATION:
-        return { color: commonColor, icon: 'fas fa-feather-alt', title: '主动想象分析' };
+        return { 
+          color: commonColor, 
+          icon: (
+            <svg width="1.1em" height="1.1em" viewBox="0 0 512 512" fill="white" style={{ verticalAlign: '-0.15em' }}>
+              <path d="M256,256 C216,156 236,52 256,32 C276,52 296,156 256,256 Z" />
+              <path d="M256,256 C320,192 404,148 419,103 C365,148 320,192 256,256 Z" />
+              <path d="M256,256 C356,216 460,236 480,256 C460,276 356,296 256,256 Z" />
+              <path d="M256,256 C320,320 404,364 419,409 C365,364 320,320 256,256 Z" />
+              <path d="M256,256 C216,356 236,460 256,480 C276,460 296,356 256,256 Z" />
+              <path d="M256,256 C192,320 108,364 93,409 C147,364 192,320 256,256 Z" />
+              <path d="M256,256 C156,216 52,236 32,256 C52,276 156,296 256,256 Z" />
+              <path d="M256,256 C192,192 108,148 93,103 C147,148 192,192 256,256 Z" />
+            </svg>
+          ),
+          title: '主动想象分析' 
+        };
       case AppMode.DREAM:
       default:
-        return { color: commonColor, icon: 'fas fa-moon', title: '梦境深度分析' };
+        return { 
+          color: commonColor, 
+          icon: (
+            <svg width="1.1em" height="1.1em" viewBox="0 0 512 512" fill="white" style={{ verticalAlign: '-0.15em' }}>
+              <path d="M256 64C160 64 64 160 64 256s96 192 192 192c48 0 91-18 124-47-5-1-10-1-16-1-106 0-192-86-192-192 0-66 33-125 84-161-17-4-35-7-54-7z" />
+            </svg>
+          ),
+          title: '梦境深度分析' 
+        };
     }
   };
   const headerConfig = getHeaderConfig();
@@ -501,7 +528,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, onReset, mode }
         <h2 style={{ 
           fontFamily: '"Noto Serif SC", serif', color: headerConfig.color, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 2, margin: 0, fontSize: '1.1rem'
         }}>
-          <i className={headerConfig.icon}></i><span>{headerConfig.title}</span>
+          {headerConfig.icon}<span>{headerConfig.title}</span>
         </h2>
         <div style={{ flex: 1 }}></div>
       </header>

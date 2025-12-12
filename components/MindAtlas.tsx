@@ -52,8 +52,8 @@ const MindAtlas: React.FC<MindAtlasProps> = ({ onBack }) => {
   const hasData = Object.keys(atlasData).length > 0;
 
   return (
-    <div className="section" style={{ display: 'block', paddingTop: '140px' }}>
-      <header className="chat-header" style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#0d1117' }}>
+    <div className="section" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <header className="chat-header" style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#0d1117', zIndex: 10 }}>
          <div style={{ flex: 1, textAlign: 'left' }}>
             <button onClick={onBack} style={{ 
               background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '0.9rem', padding: 0,
@@ -83,7 +83,15 @@ const MindAtlas: React.FC<MindAtlasProps> = ({ onBack }) => {
         <div style={{ flex: 1 }}></div>
       </header>
       
-      <div className="container wide">
+      <div className="container wide" style={{ 
+        marginTop: '140px', 
+        flex: 1, 
+        display: hasData ? 'block' : 'flex',
+        alignItems: hasData ? 'initial' : 'center',
+        justifyContent: hasData ? 'initial' : 'center',
+        paddingTop: hasData ? '20px' : '0',
+        paddingBottom: hasData ? '40px' : '0'
+      }}>
         {hasData ? (
           <div className="atlas-grid">
             {Object.values(atlasData).map((archetype: StoredArchetype) => {
@@ -174,28 +182,28 @@ const MindAtlas: React.FC<MindAtlasProps> = ({ onBack }) => {
             )})}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', color: 'var(--muted)', maxWidth: '640px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ textAlign: 'center', color: 'var(--muted)', maxWidth: '640px', padding: '0 20px', width: '100%' }}>
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               viewBox="0 0 24 24" 
               fill="currentColor" 
               stroke="none" 
-              style={{ width: '3.5rem', height: '3.5rem', marginBottom: '32px', opacity: 0.6, display: 'inline-block' }}
+              style={{ width: '3.5rem', height: '3.5rem', marginBottom: '32px', opacity: 0.6 }}
             >
               <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
               <path d="M20 2 L22 4 L20 6 L18 4 Z"/>
               <circle cx="4" cy="20" r="2.2"/>
             </svg>
-            <h3 style={{ color: 'var(--text)', fontFamily: '"Noto Serif SC", serif', fontSize: '1.5rem', marginBottom: '24px' }}>心灵航海图尚未展开</h3>
+            <h3 style={{ color: 'var(--text)', fontFamily: '"Noto Serif SC", serif', fontSize: '1.5rem', marginBottom: '24px' }}>原型航志尚未展开</h3>
             <div style={{ lineHeight: '1.8', fontSize: '0.95rem', color: 'var(--muted)', textAlign: 'left' }}>
               <p style={{ marginBottom: '16px' }}>
-                荣格所说的“原型”（Archetypes），并非具体的形象，而是潜伏在人类集体无意识深处的古老引力场。它们如同深海中看不见的洋流与暗礁，时刻牵引着我们的爱恨与命运。
+                荣格所说的"原型"（Archetypes），并非具体的形象，而是潜伏在人类集体无意识深处的古老引力场。它们如同深海中看不见的洋流与暗礁，时刻牵引着我们的爱恨与命运。
               </p>
               <p>
-                这份航志旨在将这些无形的力量具象化。当你通过梦境或情绪投射，辨认出那些在暗中影响你的原型时，它们便从混沌中显形，被标记在这张海图之上。看见，即是驾驭的开始。
+                这份航志旨在将这些无形的力量具象化。当你通过梦境或情绪投射，辨认出那些在暗中影响你的原型时，它们便从混沌中显形，被标记在这张航志之上。看见，即是驾驭的开始。
               </p>
               <p style={{ marginTop: '32px', color: 'var(--active-glow)', fontWeight: 300, borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '24px', textAlign: 'center' }}>
-                若要展开航图，请前往 <span style={{ color: 'var(--projection-blue)' }}>情绪投射</span>、<span style={{ color: 'var(--mystic-gold)' }}>梦境解析</span> 或 <span style={{ color: 'var(--imagination-green)' }}>主动想象</span> 进行探索
+                若要展开航志，请前往 <span style={{ color: 'var(--projection-blue)' }}>情绪投射</span>、<span style={{ color: 'var(--mystic-gold)' }}>梦境解析</span> 或 <span style={{ color: 'var(--imagination-green)' }}>主动想象</span> 进行探索
               </p>
             </div>
           </div>

@@ -137,7 +137,16 @@ const ActiveImagination: React.FC<ActiveImaginationProps> = ({ onEndSession, onB
             margin: 0,
             fontSize: '1.1rem'
         }}>
-            <i className="fas fa-feather-alt"></i>
+            <svg width="1.1em" height="1.1em" viewBox="0 0 512 512" fill="white" style={{ verticalAlign: '-0.15em' }}>
+              <path d="M256,256 C216,156 236,52 256,32 C276,52 296,156 256,256 Z" />
+              <path d="M256,256 C320,192 404,148 419,103 C365,148 320,192 256,256 Z" />
+              <path d="M256,256 C356,216 460,236 480,256 C460,276 356,296 256,256 Z" />
+              <path d="M256,256 C320,320 404,364 419,409 C365,364 320,320 256,256 Z" />
+              <path d="M256,256 C216,356 236,460 256,480 C276,460 296,356 256,256 Z" />
+              <path d="M256,256 C192,320 108,364 93,409 C147,364 192,320 256,256 Z" />
+              <path d="M256,256 C156,216 52,236 32,256 C52,276 156,296 256,256 Z" />
+              <path d="M256,256 C192,192 108,148 93,103 C147,148 192,192 256,256 Z" />
+            </svg>
             <span>主动想象</span>
         </h2>
         <div style={{flex: 1, textAlign: 'right'}}>
