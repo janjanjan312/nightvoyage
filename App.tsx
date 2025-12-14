@@ -51,6 +51,7 @@ const App: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isImaginationActive, setIsImaginationActive] = useState(false);
   const [currentView, setCurrentView] = useState<'intro' | 'atlas' | 'library'>('intro');
+  const [hasNewCards, setHasNewCards] = useState(false);
 
   const [isRetryableError, setIsRetryableError] = useState(false);
   const [lastImaginationHistory, setLastImaginationHistory] = useState<ChatMessage[] | null>(null);
@@ -61,6 +62,18 @@ const App: React.FC = () => {
   useEffect(() => {
     preloadLibraryImages();
   }, []);
+
+  // Check for new atlas cards on mount and after analysis
+  useEffect(() => {
+    setHasNewCards(storageService.hasNewAtlasCards());
+  }, []);
+
+  // Re-check for new cards when returning to intro view or after completing analysis
+  useEffect(() => {
+    if (currentView === 'intro' || loadingState === LoadingState.COMPLETE) {
+      setHasNewCards(storageService.hasNewAtlasCards());
+    }
+  }, [currentView, loadingState]);
 
   // Auto-scroll to input section when mode is selected
   useEffect(() => {
@@ -273,8 +286,11 @@ const App: React.FC = () => {
 
       <div style={{ position: 'fixed', top: '40px', right: '40px', zIndex: 1000, display: 'flex', gap: '16px' }}>
           <button 
-            onClick={() => setCurrentView('atlas')} 
-            className="atlas-nav-button" 
+            onClick={() => {
+              setCurrentView('atlas');
+              setHasNewCards(false); // Clear the glow when clicked
+            }} 
+            className={`atlas-nav-button ${hasNewCards ? 'has-new-content' : ''}`}
             title="原型航志"
             style={{ width: '50px', height: '50px' }}
           >

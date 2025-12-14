@@ -512,6 +512,30 @@
       .atlas-nav-button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: white; width: 48px; height: 48px; font-size: 1.2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(4px); }
       .atlas-nav-button:hover { background: rgba(255,255,255,0.2); }
       
+      /* New Card Notification Glow Effect */
+      .atlas-nav-button.has-new-content {
+        position: relative;
+        animation: pulseGlow 1.8s ease-in-out infinite;
+        background: rgba(255, 255, 255, 0.15);
+      }
+      
+      @keyframes pulseGlow {
+        0%, 100% {
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.6),
+                      0 0 40px rgba(255, 255, 255, 0.4),
+                      0 0 60px rgba(255, 255, 255, 0.2),
+                      inset 0 0 15px rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.8),
+                      0 0 60px rgba(255, 255, 255, 0.5),
+                      0 0 90px rgba(255, 255, 255, 0.3),
+                      inset 0 0 20px rgba(255, 255, 255, 0.3);
+          border-color: rgba(255, 255, 255, 0.5);
+        }
+      }
+      
       .atlas-grid { 
         display: grid; 
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 

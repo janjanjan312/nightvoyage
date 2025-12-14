@@ -29,6 +29,8 @@ const MindAtlas: React.FC<MindAtlasProps> = ({ onBack }) => {
 
   useEffect(() => {
     setAtlasData(storageService.getMindAtlasData());
+    // Mark as visited when the component mounts
+    storageService.markAtlasAsVisited();
   }, []);
 
   const handleCardClick = (archetypeName: string) => {

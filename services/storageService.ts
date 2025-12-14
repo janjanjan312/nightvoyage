@@ -1,6 +1,7 @@
 import { StoredArchetype } from '../types';
 
 const ATLAS_STORAGE_KEY = 'jungianMindAtlas';
+const ATLAS_VISIT_KEY = 'jungianMindAtlasLastVisit';
 
 /**
  * Retrieves the entire Mind Atlas data from local storage.
@@ -13,6 +14,46 @@ export const getMindAtlasData = (): { [key: string]: StoredArchetype } => {
   } catch (error) {
     console.error("Failed to parse Mind Atlas data from localStorage", error);
     return {};
+  }
+};
+
+/**
+ * Checks if there are new cards in the Mind Atlas since the last visit.
+ * @returns true if there are new cards, false otherwise.
+ */
+export const hasNewAtlasCards = (): boolean => {
+  try {
+    const atlasData = getMindAtlasData();
+    const currentCardCount = Object.keys(atlasData).length;
+    
+    const lastVisitData = localStorage.getItem(ATLAS_VISIT_KEY);
+    if (!lastVisitData) {
+      // Never visited, consider new if there are cards
+      return currentCardCount > 0;
+    }
+    
+    const { cardCount } = JSON.parse(lastVisitData);
+    return currentCardCount > cardCount;
+  } catch (error) {
+    console.error("Failed to check for new atlas cards", error);
+    return false;
+  }
+};
+
+/**
+ * Marks the Mind Atlas as visited, recording the current card count.
+ */
+export const markAtlasAsVisited = (): void => {
+  try {
+    const atlasData = getMindAtlasData();
+    const cardCount = Object.keys(atlasData).length;
+    
+    localStorage.setItem(ATLAS_VISIT_KEY, JSON.stringify({
+      cardCount,
+      timestamp: Date.now()
+    }));
+  } catch (error) {
+    console.error("Failed to mark atlas as visited", error);
   }
 };
 
