@@ -135,7 +135,9 @@
 
       /* Container Logic */
       .section.splash .container {
-        max-width: 1000px;
+        /* WIDE LAYOUT FOR SPLASH SCREEN 1 */
+        max-width: 95vw; 
+        padding: 0; /* Remove padding to let screen 1 use full width */
       }
 
       .container {
@@ -154,14 +156,77 @@
 
       .splash {
         justify-content: flex-start;
-        /* Increased padding-top for better vertical centering/breathing room */
-        padding-top: 22vh;
-        padding-bottom: 80px;
+        /* RESET padding to allow internal screens to manage height */
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
       }
 
       .splash-inner {
         text-align: center;
         animation: fadeIn 1.2s ease-out;
+        width: 100%;
+      }
+
+      /* INTRO SCREENS LOGIC */
+      .intro-screen {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .intro-screen-1 {
+        min-height: 100vh;
+        padding-top: 40px; /* Slight buffer for visual balance */
+      }
+
+      .intro-screen-2 {
+        min-height: 100vh;
+        padding-bottom: 120px; /* Generous bottom padding */
+        justify-content: flex-start; /* Changed from center to flex-start to prevent jump */
+        padding-top: 22vh; /* Use padding to position content visually in center initially */
+        transition: padding 0.5s ease;
+      }
+
+      .scroll-down-indicator {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+        z-index: 10;
+      }
+      .scroll-down-indicator:hover {
+        opacity: 1;
+      }
+      .scroll-down-indicator i {
+        font-size: 1.2rem;
+        color: #FFFFFF;
+        /* Glow Effect */
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+        /* Slower Animation: 4s instead of 2s */
+        animation: bounce 4s infinite ease-in-out;
+      }
+      .scroll-text {
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        color: #FFFFFF;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        opacity: 0.9;
+      }
+      
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); opacity: 0.5; }
+        50% { transform: translateY(12px); opacity: 1; }
       }
 
       @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -175,8 +240,8 @@
       .headline {
         font-family: var(--font-serif);
         font-weight: 200;
-        font-size: clamp(2.5rem, 8vw, 5rem); 
-        letter-spacing: clamp(0.5rem, 2vw, 1.5rem); 
+        font-size: clamp(2rem, 6vw, 4rem); 
+        letter-spacing: clamp(0.3rem, 1.5vw, 1rem); 
         margin: 0;
         color: var(--text);
       }
@@ -203,9 +268,9 @@
 
       .headline-english-subtitle {
         font-family: 'Cinzel', serif;
-        font-size: clamp(0.9rem, 2vw, 1.2rem);
+        font-size: clamp(0.75rem, 1.5vw, 1rem);
         color: var(--muted);
-        letter-spacing: clamp(0.2rem, 1vw, 0.5rem);
+        letter-spacing: clamp(0.15rem, 0.8vw, 0.4rem);
         margin-top: 0.5rem;
         text-transform: uppercase;
         opacity: 0.8;
@@ -219,9 +284,9 @@
 
       .headline-subtitle {
         font-family: var(--font-serif);
-        font-size: 1.2rem;
+        font-size: 1rem;
         color: var(--muted);
-        margin-top: 4rem; 
+        margin-top: 2.5rem; 
         letter-spacing: 2px;
       }
 
@@ -231,13 +296,185 @@
         animation-delay: var(--delay);
       }
 
+      /* Intro Floating Cards - UPDATED */
+      .intro-showcase {
+        display: flex;
+        justify-content: center; /* Center alignment */
+        gap: 28px; /* Card spacing */
+        margin-top: 56px;
+        margin-bottom: 60px; 
+        perspective: 1000px;
+        flex-wrap: nowrap; /* Do not wrap */
+        width: 100%;
+        
+        /* Scrollable Horizontal Container */
+        overflow-x: auto;
+        padding: 25px 2vw; /* Padding for float effect and scroll safety */
+        
+        /* Hide Scrollbar */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        
+        /* UX */
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .intro-showcase::-webkit-scrollbar { 
+        display: none; 
+      }
+
+      .intro-card {
+        width: 200px; /* Adjusted width */
+        height: 310px; 
+        position: relative;
+        cursor: pointer;
+        animation: floatCard 6s ease-in-out infinite;
+        z-index: 5;
+        flex-shrink: 0; /* Prevent shrinking in flex row */
+      }
+      
+      /* Animation delays are now handled inline by React component */
+
+      .intro-card-inner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        border-radius: 12px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.45);
+      }
+
+      /* CHANGED: FLIP ON HOVER */
+      .intro-card:hover .intro-card-inner {
+        transform: rotateY(180deg);
+      }
+
+      .intro-card-front, .intro-card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        border-radius: 12px;
+        overflow: hidden; /* Clips the extended overlay */
+      }
+
+      .intro-card-front {
+        background-color: #0c0f14; 
+        /* NO BORDER - use inset shadow instead */
+        border: none;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); /* Inner border to prevent edge bleeding */
+      }
+      
+      .intro-card-overlay {
+        position: absolute;
+        /* Match Mind Atlas Overlay: slightly larger than container to cover anti-aliasing artifacts */
+        bottom: -2px; left: -2px; right: -2px;
+        height: 100%; 
+        
+        /* Updated Gradient: Match Mind Atlas exactly */
+        background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 55%);
+        
+        transition: opacity 0.3s;
+        z-index: 1;
+        pointer-events: none;
+      }
+      
+      .intro-card:hover .intro-card-overlay {
+        opacity: 0.9;
+      }
+
+      .intro-card-content {
+        position: absolute;
+        bottom: 28px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        z-index: 2;
+        padding: 0 16px;
+      }
+
+      .intro-card-content h3 {
+        font-family: var(--font-serif);
+        font-size: 1.2rem;
+        color: var(--active-glow);
+        margin: 0 0 6px 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      }
+      
+      .intro-card-content span {
+        font-family: var(--font-serif);
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.9);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        font-weight: 500;
+      }
+
+      .intro-card-back {
+        background: #151922;
+        transform: rotateY(180deg);
+        border: 1px solid rgba(255,255,255,0.15);
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Center vertically */
+        align-items: center; /* Center the P element itself, but P text is left-aligned */
+        padding: 18px 20px;
+        text-align: left; /* Left align text */
+        overflow-y: auto; /* Allow scroll if text overflows */
+        scrollbar-width: none;
+      }
+      
+      .intro-card-back::-webkit-scrollbar { 
+        display: none; 
+      }
+      
+      .intro-card-back p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: rgba(255,255,255,0.9);
+        margin: 0;
+        font-family: "Noto Serif SC", serif;
+        white-space: pre-wrap; /* Allow newlines */
+        text-align: justify; /* Justify align for better look */
+        width: 100%;
+      }
+
+      @keyframes floatCard {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
+      }
+      
+      .section-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin: 40px 0 20px;
+        color: rgba(255, 255, 255, 0.85); /* Lighter */
+        font-family: var(--font-serif);
+        font-size: 1.2rem; /* Larger */
+        letter-spacing: 2px;
+      }
+      
+      /* Removed ::before and ::after */
+
       /* Mode Cards */
       .mode-selection-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr); 
         gap: 40px; 
         width: 100%;
-        margin-top: 80px; 
+        margin-top: 20px;
+        
+        /* CONSTRAINED WIDTH FOR SCREEN 2 */
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 24px;
+        padding-right: 24px;
       }
 
       .mode-card {
@@ -333,6 +570,9 @@
         }
         .section.splash .container {
            max-width: 100%;
+        }
+        .intro-showcase {
+          gap: 16px;
         }
       }
 
@@ -452,9 +692,14 @@
         max-width: 800px; 
         margin: 40px auto 0; 
         box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-        animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        /* Use a fade-in-down animation for smoother entry */
+        animation: fadeInDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
-      @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+      
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); } 
+        to { opacity: 1; transform: translateY(0); } 
+      }
 
       textarea {
         width: 100%; height: 160px;
@@ -462,11 +707,54 @@
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 8px; padding: 16px;
         font-family: 'Inter', sans-serif; font-size: 1rem; color: var(--text);
-        resize: none; outline: none; transition: all 0.2s; line-height: 1.6;
+        resize: none; outline: none; transition: all 0.3s; line-height: 1.6;
       }
       textarea:focus {
         border-color: rgba(255, 255, 255, 0.7); 
         background: rgba(12, 16, 23, 0.9);
+      }
+
+      .voice-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        backdrop-filter: blur(4px);
+        flex-shrink: 0;
+      }
+      .voice-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+      .voice-button:active {
+        transform: translateY(0);
+      }
+      .voice-button.recording {
+        background: rgba(200, 220, 255, 0.2);
+        border-color: rgba(200, 220, 255, 0.5);
+        color: rgb(200, 220, 255);
+        animation: recordingPulse 2s ease-in-out infinite;
+      }
+      .voice-button.recording:hover {
+        background: rgba(200, 220, 255, 0.25);
+      }
+
+      @keyframes recordingPulse {
+        0%, 100% { 
+          box-shadow: 0 0 0 0 rgba(200, 220, 255, 0.5);
+        }
+        50% { 
+          box-shadow: 0 0 0 8px rgba(200, 220, 255, 0);
+        }
       }
 
       .analyze-button {
@@ -511,30 +799,6 @@
 
       .atlas-nav-button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: white; width: 48px; height: 48px; font-size: 1.2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(4px); }
       .atlas-nav-button:hover { background: rgba(255,255,255,0.2); }
-      
-      /* New Card Notification Glow Effect */
-      .atlas-nav-button.has-new-content {
-        position: relative;
-        animation: pulseGlow 1.8s ease-in-out infinite;
-        background: rgba(255, 255, 255, 0.15);
-      }
-      
-      @keyframes pulseGlow {
-        0%, 100% {
-          box-shadow: 0 0 20px rgba(255, 255, 255, 0.6),
-                      0 0 40px rgba(255, 255, 255, 0.4),
-                      0 0 60px rgba(255, 255, 255, 0.2),
-                      inset 0 0 15px rgba(255, 255, 255, 0.2);
-          border-color: rgba(255, 255, 255, 0.3);
-        }
-        50% {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.8),
-                      0 0 60px rgba(255, 255, 255, 0.5),
-                      0 0 90px rgba(255, 255, 255, 0.3),
-                      inset 0 0 20px rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.5);
-        }
-      }
       
       .atlas-grid { 
         display: grid; 

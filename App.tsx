@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Intro from './components/Intro';
 import AnalysisResult from './components/AnalysisResult';
 import LoadingView from './components/LoadingView';
@@ -8,7 +8,8 @@ import Library, { preloadLibraryImages } from './components/Library';
 import StarField from './components/StarField';
 import { startStreamAnalysis, analyzeImaginationSession } from './services/geminiService';
 import * as storageService from './services/storageService';
-import { LoadingState, DreamResult, AppMode, ChatMessage } from './types';
+import { ARCHETYPE_DESCRIPTIONS } from './services/archetypeData';
+import { LoadingState, DreamResult, AppMode, ChatMessage, StoredArchetype } from './types';
 
 // Icon paths duplicated from Intro.tsx to avoid prop-drilling or complex state management.
 const PROJECTION_ICON_PATH = "M256 120c-126 0-216 136-216 136s90 136 216 136 216-136 216-136-90-136-216-136z M256 322c-36.5 0-66-29.5-66-66s29.5-66 66-66 66 29.5 66 66-29.5 66-66 66z";
@@ -45,35 +46,54 @@ const smoothScrollTo = (targetY: number, duration: number) => {
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<AppMode | null>(null);
-  const [input, setInput] = useState('');
+  const [dreamInput, setDreamInput] = useState('');
+  const [projectionInput, setProjectionInput] = useState('');
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [result, setResult] = useState<DreamResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isImaginationActive, setIsImaginationActive] = useState(false);
   const [currentView, setCurrentView] = useState<'intro' | 'atlas' | 'library'>('intro');
-  const [hasNewCards, setHasNewCards] = useState(false);
 
   const [isRetryableError, setIsRetryableError] = useState(false);
   const [lastImaginationHistory, setLastImaginationHistory] = useState<ChatMessage[] | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const isStopping = useRef(false);
   
   const inputSectionRef = useRef<HTMLDivElement>(null);
+
+  // 根据当前模式获取对应的输入内容
+  const input = mode === AppMode.DREAM ? dreamInput : projectionInput;
+  const setInput = mode === AppMode.DREAM ? setDreamInput : setProjectionInput;
+
+  // 计算要在主页显示的卡片
+  const introCards = useMemo(() => {
+    const atlasData = storageService.getMindAtlasData();
+    const userArchetypes = Object.values(atlasData);
+
+    if (userArchetypes.length > 0) {
+      // 如果有用户数据，按最后一次洞察的时间倒序排列（最新的在左边），只显示最新的5个
+      return userArchetypes.sort((a, b) => {
+        const timeA = a.insights[a.insights.length - 1]?.timestamp || 0;
+        const timeB = b.insights[b.insights.length - 1]?.timestamp || 0;
+        return timeB - timeA;
+      }).slice(0, 5);
+    } else {
+      // 如果没有用户数据，随机从标准列表中选5个
+      const allNames = Object.keys(ARCHETYPE_DESCRIPTIONS);
+      const shuffled = [...allNames].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 5).map(name => ({
+        name,
+        insights: [],
+        isRandom: true
+      })) as (StoredArchetype & { isRandom: boolean })[];
+    }
+  }, [currentView, loadingState]); // 当返回主页或完成解析时重新计算
 
   // Preload Library images on mount
   useEffect(() => {
     preloadLibraryImages();
   }, []);
-
-  // Check for new atlas cards on mount and after analysis
-  useEffect(() => {
-    setHasNewCards(storageService.hasNewAtlasCards());
-  }, []);
-
-  // Re-check for new cards when returning to intro view or after completing analysis
-  useEffect(() => {
-    if (currentView === 'intro' || loadingState === LoadingState.COMPLETE) {
-      setHasNewCards(storageService.hasNewAtlasCards());
-    }
-  }, [currentView, loadingState]);
 
   // Auto-scroll to input section when mode is selected
   useEffect(() => {
@@ -203,7 +223,8 @@ const App: React.FC = () => {
 
   const handleReset = useCallback(() => {
     setResult(null);
-    setInput('');
+    setDreamInput('');
+    setProjectionInput('');
     setErrorMsg(null);
     setLoadingState(LoadingState.IDLE);
     setMode(null); 
@@ -223,6 +244,110 @@ const App: React.FC = () => {
 
   const projectionPlaceholder = `请描述一个最近让你产生强烈情绪反应的人或事——无论是无法抑制的愤怒、莫名的反感，还是过度的崇拜与迷恋。具体是哪一个瞬间、哪一种特质击中了你？...`;
   const dreamPlaceholder = `请尽可能详细地描述梦境：环境是昏暗还是明亮？出现了哪些熟悉或陌生的人？你感受到了怎样的情绪（恐惧、焦虑、欣喜）？即使是看似荒诞或支离破碎的片段，往往也蕴含着最关键的心理隐喻...`;
+
+  // 语音识别功能
+  const startVoiceRecognition = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('您的浏览器不支持语音识别功能。请使用 Chrome、Edge 或 Safari 浏览器。');
+      return;
+    }
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = 'zh-CN';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+      setInterimTranscript('');
+      isStopping.current = false;
+    };
+
+    recognition.onresult = (event: any) => {
+      // 如果正在停止过程中，忽略后续结果
+      if (isStopping.current) return;
+      
+      let interim = '';
+      let final = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+
+      // 实时显示临时识别结果
+      setInterimTranscript(interim);
+
+      // 将确定的文字追加到输入框
+      if (final) {
+        setInput(prev => {
+          // 如果前面有内容且不是以空格结尾，添加空格
+          if (prev && !prev.endsWith(' ') && !prev.endsWith('\n')) {
+            return prev + ' ' + final;
+          }
+          return prev + final;
+        });
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('语音识别错误:', event.error);
+      setIsRecording(false);
+      setInterimTranscript('');
+      if (event.error === 'no-speech') {
+        alert('没有检测到语音，请重试');
+      } else if (event.error === 'not-allowed') {
+        alert('请允许浏览器访问麦克风');
+      }
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      setInterimTranscript('');
+      isStopping.current = false;
+      (window as any).currentRecognition = null;
+    };
+
+    recognition.start();
+
+    // 保存 recognition 实例以便停止
+    (window as any).currentRecognition = recognition;
+  };
+
+  const stopVoiceRecognition = () => {
+    if ((window as any).currentRecognition) {
+      // 先设置停止标志，阻止新的识别结果
+      isStopping.current = true;
+      
+      // 保存当前的临时文字
+      const currentInterim = interimTranscript.trim();
+      
+      // 如果有临时文字，添加到输入框
+      if (currentInterim) {
+        setInput(prev => {
+          // 如果前面有内容且不是以空格结尾，添加空格
+          if (prev && !prev.endsWith(' ') && !prev.endsWith('\n')) {
+            return prev + ' ' + currentInterim;
+          }
+          return prev + currentInterim;
+        });
+      }
+      
+      // 停止识别
+      (window as any).currentRecognition.stop();
+      (window as any).currentRecognition = null;
+      
+      // 清空临时文字和录音状态
+      setInterimTranscript('');
+      setIsRecording(false);
+    }
+  };
 
   if (currentView === 'atlas') {
     return <MindAtlas onBack={() => setCurrentView('intro')} />;
@@ -284,92 +409,58 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ position: 'fixed', top: '40px', right: '40px', zIndex: 1000, display: 'flex', gap: '16px' }}>
-          <button 
-            onClick={() => {
-              setCurrentView('atlas');
-              setHasNewCards(false); // Clear the glow when clicked
-            }} 
-            className={`atlas-nav-button ${hasNewCards ? 'has-new-content' : ''}`}
-            title="原型航志"
-            style={{ width: '50px', height: '50px' }}
-          >
-             <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 24 24" 
-              fill="currentColor" 
-              stroke="none" 
-              style={{ width: '24px', height: '24px' }}
-            >
-              <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
-              <path d="M20 2 L22 4 L20 6 L18 4 Z"/>
-              <circle cx="4" cy="20" r="2.2"/>
-            </svg>
-          </button>
-          <button 
-            onClick={() => setCurrentView('library')} 
-            className="atlas-nav-button" 
-            title="心理文库"
-            style={{ width: '50px', height: '50px' }}
-          >
-             <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 24 24" 
-              fill="currentColor" 
-              stroke="none" 
-              style={{ width: '24px', height: '24px' }}
-            >
-              <path d="M2 6l6-2v14l-6 2V6z M9 4l6 2v14l-6-2V4z M16 6l6-2v14l-6 2V6z" />
-            </svg>
-          </button>
-      </div>
+      {loadingState === LoadingState.IDLE && !isImaginationActive && currentView === 'intro' && (
+        <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 100, display: 'flex', gap: '16px' }}>
+          <button className="atlas-nav-button" title="原型航志" onClick={() => setCurrentView('atlas')}><i className="fas fa-compass"></i></button>
+          <button className="atlas-nav-button" title="心理文库" onClick={() => setCurrentView('library')}><i className="fas fa-book-open"></i></button>
+        </div>
+      )}
 
       <div className="section splash">
-        <div className="container">
-          
           {loadingState === LoadingState.IDLE && (
-              <Intro onModeSelect={setMode} currentMode={mode} />
+              <Intro 
+                onModeSelect={setMode} 
+                currentMode={mode}
+                cards={introCards}
+                inputSection={
+                  mode && (
+                    <div className="container" ref={inputSectionRef}>
+                      {mode === AppMode.ACTIVE_IMAGINATION ? (
+                        <div className="input-section" style={{ textAlign: 'center' }}>
+                           <p style={{ color: 'var(--muted)', marginBottom: '24px', lineHeight: '1.6' }}>
+                             主动想象是一种与潜意识对话的技术。建议在安静环境下进行。
+                           </p>
+                           <button className="analyze-button" onClick={() => setIsImaginationActive(true)}>开始旅程</button>
+                        </div>
+                      ) : (
+                        <div className="input-section">
+                          <textarea
+                            placeholder={mode === AppMode.DREAM ? dreamPlaceholder : projectionPlaceholder}
+                            value={input + (interimTranscript && input && !input.endsWith(' ') && !input.endsWith('\n') ? ' ' : '') + interimTranscript}
+                            onChange={(e) => setInput(e.target.value)}
+                            style={isRecording ? { 
+                              borderColor: 'rgba(200, 220, 255, 0.6)',
+                              boxShadow: '0 0 20px rgba(200, 220, 255, 0.3)'
+                            } : {}}
+                          />
+                          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px' }}>
+                            <button
+                              onClick={isRecording ? stopVoiceRecognition : startVoiceRecognition}
+                              className={`voice-button ${isRecording ? 'recording' : ''}`}
+                              title={isRecording ? "停止录音" : "语音输入"}
+                              type="button"
+                            >
+                              <i className={isRecording ? "fas fa-stop-circle" : "fas fa-microphone"}></i>
+                            </button>
+                            <button className="analyze-button" disabled={!input.trim()} onClick={handleAnalyze}>开启解析</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+              />
           )}
-
-          {loadingState === LoadingState.IDLE && mode && (
-            <div ref={inputSectionRef} className="input-section" style={{ position: 'relative', zIndex: 20 }}>
-              <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.5rem', fontFamily: 'var(--font-serif)', fontWeight: 600 }}>
-                    {mode === AppMode.DREAM && <svg width="1.1em" height="1.1em" viewBox="0 0 512 512" fill="var(--mystic-gold)" style={{ verticalAlign: '-0.15em' }}><path d={DREAM_ICON_PATH} /></svg>}
-                    {mode === AppMode.PROJECTION && <svg width="1.1em" height="1.1em" viewBox="0 0 512 512" fill="var(--projection-blue)" style={{ verticalAlign: '-0.15em' }}><path d={PROJECTION_ICON_PATH} /></svg>}
-                    {mode === AppMode.ACTIVE_IMAGINATION && <svg width="1.1em" height="1.1em" viewBox="0 0 512 512" fill="var(--imagination-green)" style={{ verticalAlign: '-0.15em' }}>{IMAGINATION_ICON_PATHS.map((path, i) => <path key={i} d={path} />)}</svg>}
-                    
-                    {mode === AppMode.DREAM ? "记录梦境" : mode === AppMode.PROJECTION ? "情绪投射" : "主动想象"}
-                  </label>
-                  <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '8px', lineHeight: 1.7 }}>
-                    {mode === AppMode.DREAM 
-                      ? "梦是通往无意识的皇家大道。当意识的审查放松，心灵深处的本能与智慧便借由象征符号上演戏剧。请记录下那些荒诞的意象、强烈的情感或重复出现的主题，它们往往携带着心灵整合所需的关键信息。"
-                      : mode === AppMode.PROJECTION
-                      ? '「投射」是无意识的镜子。我们常将自己无意识中未被接纳的阴影或未被发掘的潜能，不由自主地“投射”到他人身上。识别这些投射，便是收回力量、整合自我的契机。'
-                      : '由荣格开创的“主动想象”是一种特殊的“清醒梦”技术。它邀请我们在意识清醒时，放下理性的控制，进入内心的“戏剧舞台”。这里潜意识的意象不再是静止的画面，而是鲜活的角色，与它们对话、互动，将分裂的能量重新整合为生命力。'}
-                  </p>
-                </div>
-              
-              { (mode === AppMode.DREAM || mode === AppMode.PROJECTION) &&
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={mode === AppMode.DREAM ? dreamPlaceholder : projectionPlaceholder}
-                />
-              }
-              
-              <div style={{ marginTop: '24px', textAlign: 'center' }}>
-                <button
-                  onClick={mode === AppMode.ACTIVE_IMAGINATION ? () => setIsImaginationActive(true) : handleAnalyze}
-                  disabled={(mode === AppMode.DREAM || mode === AppMode.PROJECTION) && !input.trim()}
-                  className="analyze-button"
-                >
-                  {mode === AppMode.DREAM ? "解析梦境" : mode === AppMode.PROJECTION ? "分析投射" : "开始想象"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </>
   );
