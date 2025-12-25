@@ -422,6 +422,7 @@ const App: React.FC = () => {
                 onModeSelect={setMode} 
                 currentMode={mode}
                 cards={introCards}
+                inputSectionRef={inputSectionRef}
                 inputSection={
                   mode && (
                     <div className="container" ref={inputSectionRef}>

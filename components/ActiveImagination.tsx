@@ -61,6 +61,13 @@ const ActiveImagination: React.FC<ActiveImaginationProps> = ({ onEndSession, onB
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Auto-scroll when new messages arrive (with small delay for DOM update)
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [messages.length]);
+
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
@@ -76,10 +83,6 @@ const ActiveImagination: React.FC<ActiveImaginationProps> = ({ onEndSession, onB
     };
     init();
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!inputText.trim()) return;

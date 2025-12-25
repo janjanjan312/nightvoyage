@@ -9,6 +9,7 @@ interface IntroProps {
   currentMode: AppMode | null;
   inputSection?: React.ReactNode;
   cards: (StoredArchetype & { isRandom?: boolean })[];
+  inputSectionRef?: React.RefObject<HTMLDivElement>;
 }
 
 const smoothScrollToTarget = (target: HTMLElement, duration: number) => {
@@ -189,12 +190,36 @@ const IntroCard: React.FC<{
   );
 };
 
-const Intro: React.FC<IntroProps> = ({ onModeSelect, currentMode, inputSection, cards }) => {
+const Intro: React.FC<IntroProps> = ({ onModeSelect, currentMode, inputSection, cards, inputSectionRef }) => {
   const modeSectionRef = useRef<HTMLDivElement>(null);
 
   const scrollToModes = () => {
-    if (modeSectionRef.current) {
-        smoothScrollToTarget(modeSectionRef.current, 1500);
+    // If mode is already selected and input section exists, scroll to center input
+    if (currentMode && inputSectionRef?.current) {
+      const element = inputSectionRef.current;
+      const rect = element.getBoundingClientRect();
+      const absoluteTop = rect.top + window.scrollY;
+      // Calculate target to center the element in viewport (same as initial mode selection)
+      const targetY = absoluteTop - (window.innerHeight / 2) + (rect.height / 2);
+      const startY = window.scrollY;
+      const distance = targetY - startY;
+      let startTime: number | null = null;
+
+      const animation = (currentTime: number) => {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / 1500, 1);
+        const ease = progress < 0.5 
+          ? 4 * progress * progress * progress 
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        window.scrollTo(0, startY + distance * ease);
+        if (timeElapsed < 1500) {
+          requestAnimationFrame(animation);
+        }
+      };
+      requestAnimationFrame(animation);
+    } else if (modeSectionRef.current) {
+      smoothScrollToTarget(modeSectionRef.current, 1500);
     }
   };
 
