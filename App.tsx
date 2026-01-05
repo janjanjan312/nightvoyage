@@ -242,8 +242,11 @@ const App: React.FC = () => {
     }
   }, [mode, lastImaginationHistory, handleAnalyze, runImaginationAnalysis]);
 
-  const projectionPlaceholder = `请描述一个最近让你产生强烈情绪反应的人或事——无论是无法抑制的愤怒、莫名的反感，还是过度的崇拜与迷恋。具体是哪一个瞬间、哪一种特质击中了你？...`;
-  const dreamPlaceholder = `请尽可能详细地描述梦境：环境是昏暗还是明亮？出现了哪些熟悉或陌生的人？你感受到了怎样的情绪（恐惧、焦虑、欣喜）？即使是看似荒诞或支离破碎的片段，往往也蕴含着最关键的心理隐喻...`;
+  const projectionPlaceholder = `最近有什么让你情绪被强烈触发的情境（人/事/场景）？比如说：
+- 朋友拿我的工作开玩笑时，我突然心里一沉并想反驳，感到又委屈又愤怒；
+- 同事临时把任务甩给我，我表面答应但心里紧绷，觉得被忽视；
+- 刷到朋友升职喜报，我先是祝福但随即酸涩焦虑，冒出“我是不是不够好”。`;
+  const dreamPlaceholder = `示例：我在一座看不到尽头的高塔顶端，脚下一块石砖突然塌陷，我整个人向下坠，风声呼啸，周围的楼层像碎片一样闪过，越往下越模糊，既恐惧又有一种失重的空白感。`;
 
   // 语音识别功能
   const startVoiceRecognition = () => {
@@ -429,7 +432,7 @@ const App: React.FC = () => {
                       {mode === AppMode.ACTIVE_IMAGINATION ? (
                         <div className="input-section" style={{ textAlign: 'center' }}>
                            <p style={{ color: 'var(--muted)', marginBottom: '24px', lineHeight: '1.6' }}>
-                             主动想象是一种与潜意识对话的技术。建议在安静环境下进行。
+                             主动想象是荣格首创、常用的与潜意识对话技术：放松身心，允许内在意象浮现，与之交谈或跟随其发展。建议在安静环境下进行，保持专注与开放。
                            </p>
                            <button className="analyze-button" onClick={() => setIsImaginationActive(true)}>开始旅程</button>
                         </div>
