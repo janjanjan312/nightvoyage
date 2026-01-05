@@ -269,11 +269,7 @@ const Intro: React.FC<IntroProps> = ({ onModeSelect, currentMode, inputSection, 
       </div>
 
       <div className="intro-screen intro-screen-2" ref={modeSectionRef}>
-        <div className="section-divider">
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.5)', letterSpacing: '3px' }}>
-            探索你无意识中的原型
-          </span>
-        </div>
+        <div className="section-divider"></div>
         <div className="mode-selection-grid">
           <div onClick={() => onModeSelect(AppMode.PROJECTION)} className={`mode-card ${currentMode === AppMode.PROJECTION ? 'active' : ''}`} style={{ '--icon-color': 'var(--projection-blue)' } as React.CSSProperties}>
              <div className="card-icon-wrapper"><div className="icon-container"><ConstellationIcon {...projectionData} color="var(--projection-blue)" /></div></div>
