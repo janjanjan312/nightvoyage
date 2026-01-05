@@ -116,7 +116,9 @@ const IntroCard: React.FC<{
               backgroundImage: `url(${imageUrl})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              zIndex: 0
+              zIndex: 0,
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden'
            }} />
            <div className="intro-card-overlay" />
            <div className="intro-card-content">
@@ -126,7 +128,9 @@ const IntroCard: React.FC<{
            {!isRandom && (
              <div style={{
                position: 'absolute', top: '12px', right: '12px', zIndex: 10,
-               color: 'var(--mystic-gold)', fontSize: '0.7rem'
+               color: 'var(--mystic-gold)', fontSize: '0.7rem',
+               WebkitBackfaceVisibility: 'hidden',
+               backfaceVisibility: 'hidden'
              }}>
                <i className="fas fa-certificate"></i>
              </div>
@@ -134,7 +138,9 @@ const IntroCard: React.FC<{
         </div>
         <div className="intro-card-back">
           {isRandom || displayInsights.length === 0 ? (
-            <p style={{ fontSize: '0.9rem', textAlign: 'justify', lineHeight: '1.8' }}>{description}</p>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <p style={{ fontSize: '0.9rem', textAlign: 'justify', lineHeight: '1.8' }}>{description}</p>
+            </div>
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
               <div style={{ 

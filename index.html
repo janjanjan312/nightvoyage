@@ -299,7 +299,7 @@
       /* Intro Floating Cards - UPDATED */
       .intro-showcase {
         display: flex;
-        justify-content: center; /* Center alignment */
+        justify-content: center; /* Center alignment (desktop) */
         gap: 28px; /* Card spacing */
         margin-top: 56px;
         margin-bottom: 60px; 
@@ -324,6 +324,13 @@
         display: none; 
       }
 
+      /* 小屏（如手机）左对齐首张卡片，便于向右滑动查看 */
+      @media (max-width: 768px) {
+        .intro-showcase {
+          justify-content: flex-start;
+        }
+      }
+
       .intro-card {
         width: 200px; /* Adjusted width */
         height: 310px; 
@@ -333,6 +340,9 @@
         z-index: 5;
         flex-shrink: 0; /* Prevent shrinking in flex row */
         -webkit-box-reflect: none; /* Remove mirror reflection */
+        perspective: 1200px;               /* 3D 场景，避免正面被背面镜像 */
+        transform-style: preserve-3d;
+        overflow: hidden;                  /* 把裁剪放在外层，降低穿透 */
       }
       
       /* Animation delays are now handled inline by React component */
@@ -364,6 +374,7 @@
       }
 
       .intro-card-front {
+        transform: rotateY(0deg);
         background-color: #0c0f14; 
         /* NO BORDER - use inset shadow instead */
         border: none;
@@ -382,6 +393,8 @@
         transition: opacity 0.3s;
         z-index: 1;
         pointer-events: none;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
       }
       
       .intro-card:hover .intro-card-overlay {
@@ -396,6 +409,8 @@
         text-align: center;
         z-index: 2;
         padding: 0 16px;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
       }
 
       .intro-card-content h3 {
