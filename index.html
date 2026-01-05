@@ -317,6 +317,7 @@
         
         /* UX */
         -webkit-overflow-scrolling: touch;
+        -webkit-box-reflect: none; /* Remove mirror reflection */
       }
       
       .intro-showcase::-webkit-scrollbar { 
@@ -331,6 +332,7 @@
         animation: floatCard 6s ease-in-out infinite;
         z-index: 5;
         flex-shrink: 0; /* Prevent shrinking in flex row */
+        -webkit-box-reflect: none; /* Remove mirror reflection */
       }
       
       /* Animation delays are now handled inline by React component */
@@ -343,6 +345,7 @@
         transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         border-radius: 12px;
         box-shadow: 0 15px 40px rgba(0,0,0,0.45);
+        -webkit-box-reflect: none; /* Remove mirror reflection */
       }
 
       /* CHANGED: FLIP ON HOVER */
